@@ -25,7 +25,7 @@ If in doubt, I'd recommend using Ubuntu 12.04 LTS.
 First clone the repo:
 
 ```bash
-git clone https://github.com/econpy/torque
+git clone https://github.com/jacekowski/torque
 cd torque
 ```
 
@@ -45,6 +45,7 @@ Then create a table in the database to store the logged data using the `create_t
 
 ```bash
 mysql -u yoursqlusername -p < scripts/create_torque_log_table.sql
+mysql -u yoursqlusername -p < scripts/cities.sql
 ```
 
 
@@ -62,7 +63,7 @@ find . -type f -exec chmod 644 {} +
 Rename the `creds-sample.php` file to `creds.php`:
 
 ```bash
-mv creds-sample.php creds.php
+mv config-sample.php config.php
 ```
 
 Then edit/enter your MySQL username and password in the empty **$db_user** and **$db_pass** fields:
