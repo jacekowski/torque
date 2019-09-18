@@ -1,0 +1,102 @@
+<script src="hc/js/highcharts.js"></script>
+<div id="report"></div>
+<div id="hccontainer" class="col-md-12 col-xs-12"></div>
+
+<script>
+    $(function () {
+        var $report = $('#report');
+
+        Highcharts.setOptions({
+            time: {
+                useUTC : false
+            }
+        });
+
+        $('#hccontainer').highcharts({
+            chart: {
+                renderTo: 'container',
+                events: {
+                    selection: function (event) {
+                        isSelectionFired = true;
+                    }
+                },
+                zoomType: 'x'
+            },
+            title: {
+                text: 'Chart'
+            },
+            xAxis: {
+                type: 'datetime',
+                events: {
+                    afterSetExtremes: function (event) {
+                        if (event.userMin && event.userMax && isSelectionFired) {
+                            var dataX = {value: 0, count: 0};
+                            var series = this.series[0];
+                            var points = series.points;
+                            var min = event.min, max = event.max;
+
+                            for (var i = 0; i < points.length; i++) {
+                                if (points[i].x >= min && points[i].x <= max) {
+                                    dataX.value += points[i].y;
+                                    dataX.count += 1;
+                                }
+                            }
+
+                            isSelectionFired = false;
+
+                            $report.html('avgY: ' + dataX.value / dataX.count);
+                        } else {
+                            $report.html('Selection reset');
+                        }
+                    }
+                }
+            },
+            legend: {
+                align: 'left',
+                verticalAlign: 'top',
+                y: 20,
+                floating: true,
+                borderWidth: 0
+            },
+            tooltip: {
+                shared: true,
+                crosshairs: true
+            },
+
+            plotOptions: {
+                series: {
+                    point: {
+                        events: {
+                            mouseOver: function () {
+                                marker.setPosition(path[this.index]);
+                                //$reporting.html('x: ' + this.x + ', y: ' + this.y);
+                            }
+                        }
+                    }
+                }
+            },
+
+
+            yAxis: [
+                {% for plot_id, plot_entry in plot_data %}
+                {
+                    title: {text: '{{ plot_entry.name }}'},
+                    labels: {align: 'left', rotation: -90},
+
+                },
+                {% endfor %}
+            ],
+
+
+            series: [
+                {% for plot_id, plot_entry in plot_data %}
+                {
+                    name: '{{ plot_entry.name }}',
+                    yAxis: {{ loop.index0 }},
+                    data: [{% for time, value in plot_entry.data %}[{{ time }}, {{ value }}], {% endfor %}],
+                },
+                {% endfor %}
+            ]
+        });
+    });
+</script>

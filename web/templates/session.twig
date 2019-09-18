@@ -1,0 +1,182 @@
+{% include'header.twig' %}
+{% include 'gmaps.twig' %}
+    <!-- Flot Javascript files -->
+    <script src="static/js/jquery.flot.js"></script>
+    <script src="static/js/jquery.flot.axislabels.js"></script>
+    <script src="static/js/jquery.flot.hiddengraphs.js"></script>
+    <script src="static/js/jquery.flot.multihighlight-delta.js"></script>
+    <script src="static/js/jquery.flot.selection.js"></script>
+    <script src="static/js/jquery.flot.time.js"></script>
+    <script src="static/js/jquery.flot.tooltip.min.js"></script>
+    <script src="static/js/jquery.flot.updater.js"></script>
+    <script src="static/js/jquery.flot.resize.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+
+            {% for plot_id, plot_entry in plot_data %}
+            var s{{ plot_id }} = [{% for time, value in plot_entry.data %}[{{ time }}, {{ value }}], {% endfor %}];
+            {% endfor %}
+
+            var flotData = [
+                {% set yaxis_seq = 0 %}
+                {% for plot_id, plot_entry in plot_data %}
+                {% set yaxis_seq = yaxis_seq + 1 %}
+                {data: s{{ plot_id }}, label: "{{ plot_entry.name }}", yaxis: {{ yaxis_seq }}},
+                {% endfor %}
+            ];
+
+            function doPlot(position) {
+                $.plot("#placeholder", flotData, {
+                            xaxes: [{
+                                mode: "time",
+                                timezone: "browser",
+                                axisLabel: "Time",
+                                timeformat: "%H:%M",
+                                twelveHourClock: false
+                            }],
+                            yaxes: [
+                                {% for plot_id, plot_entry in plot_data %}
+
+                                {alignTicksWithAxis: 1, axisLabel: "{{ plot_entry.name }}"},
+
+                                {% endfor %}
+                            ],
+                            legend: {
+                                position: "nw",
+                                hideable: true,
+                                backgroundOpacity: 0.1,
+                                margin: 0
+                            },
+                            //selection: { mode: "xy" },
+                            grid: {
+                                hoverable: false,
+                                clickable: true
+                            },
+                            //multihighlightdelta: { mode: 'x' },
+                            tooltip: false,
+                            tooltipOpts: {
+                                content: "%s at %x: %y",
+                                xDateFormat: "%H:%M",
+                                twelveHourClock: false,
+                                onHover: function (flotItem, $tooltipEl) {
+                                    // console.log(flotItem, $tooltipEl);
+                                }
+                            }
+                        }
+                )
+            }
+
+            doPlot("right");
+
+            $("button").click(function () {
+                doPlot($(this).text());
+            });
+        });
+    </script>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div id="map-container" class="col-md-7 col-xs-12">
+            <div id="map-canvas"></div>
+        </div>
+        <div id="right-container" class="col-md-5 col-xs-12">
+            <div id="right-cell">
+                {% if valid_permalink == false %}
+                    {% include 'session_selector.twig' %}
+                    {% include 'plot_variable_selector.twig' %}
+                {% endif %}
+                <div>
+                    <div class="row center-block" style="padding-bottom:5px;">
+
+                            <div class="demo-container">
+                                <div id="placeholder" class="demo-placeholder" style="height:300px;"></div>
+                            </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="row center-block">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Min/Max</th>
+                                        <th>Mean</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for plot_id, plot_entry in plot_data %}
+                                        <tr>
+                                            <td><strong>{{ plot_entry.name }}</strong></td>
+                                            <td>{{ plot_entry.min }}/{{ plot_entry.max }}</td>
+                                            <td>{{ plot_entry.avg }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                    </div>
+
+                    <br>
+                </div>
+                    <div>
+                        <div class="row center-block" style="padding-bottom:18px;">
+                                <div class="btn-group btn-group-justified">
+                                    <a class="btn btn-default" role="button"
+                                       href="?export&id={{ session_data.sid }}&filetype=csv">CSV</a>
+                                    <a class="btn btn-default" role="button"
+                                       href="?export&id={{ session_data.sid }}&filetype=json">JSON</a>
+                                </div>
+                        </div>
+                    </div>
+                <div>
+                    <div class="row center-block" style="padding-bottom:18px;">
+                        <div style="padding-top:10px;text-align:center;">
+                            <h5><span class="label label-primary">Distance travelled : {{ session_data.distance }}, Fuel : {{ session_data.fuel }}l, MPG : {{ session_data.economy_mpg }}, l/100km : {{ session_data.economy_lp100 }}</span></h5>
+                        </div>
+                        <div style="padding-top:10px;text-align:center;">
+                            <h5><span class="label label-primary">Start City : {{ start_city }}, End City : {{ end_city }}</span></h5>
+                        </div>
+                        <div style="padding-top:10px;text-align:center;">
+                            <h5><span class="label label-primary"><a href="https://torque.jacekowski.org/?permalink={{ permalink }}">Permalink</a> </span></h5>
+                        </div>
+                    </div>
+                </div>
+                {% if valid_permalink == false %}
+                    <div>
+                        <div class="row center-block" style="padding-bottom:18px;">
+                            <div align="center" style="padding-top:10px;">
+                                <table border=1><tr><th>Query</th><th>Time (ms)</th><th>Error/Row Count</th></tr>
+                                    {% set total_sql_time = 0 %}
+                                    {% for log_entry in sql_log %}
+                                        {% set total_sql_time = total_sql_time + log_entry.time %}
+                                        <tr><td>{{ log_entry.query }}</td><td>{{ log_entry.time }}</td><td>{{ log_entry.result }}</td></tr>
+                                    {% endfor %}
+                                    <tr><th>{{ sql_log|length }} queries</th><th>{{ total_sql_time }}</th></tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="row center-block" style="padding-bottom:18px;">
+                            <div style="padding-top:10px;">
+                                <pre>%twig_profiling_placeholder%</pre>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% if setZoomManually == 0 %}
+        <div class="row">
+            {% include 'data_chart.twig' %}
+        </div>
+    {% endif %}
+
+</div>
+</body>
+</html>

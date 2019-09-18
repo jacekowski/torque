@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Torque Viewer</title>
+    <link rel="stylesheet" href="static/css/bootstrap.css">
+    <link rel="stylesheet" href="static/css/chosen.min.css">
+    <link rel="stylesheet" href="static/css/torque.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+    <script src="static/js/jquery.min.js"></script>
+    <script src="static/jquery-ui-1.11.2/jquery-ui.min.js"></script>
+    <script src="static/js/bootstrap.min.js"></script>
+    <script src="static/js/jquery.peity.min.js"></script>
+    <script src="static/js/chosen.jquery.min.js"></script>
+    <script src="https://browser.sentry-cdn.com/5.5.0/bundle.min.js" crossorigin="anonymous">
+    </script>
+    <script
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA10aOZP0yEnEmwQuNxhzsK2H8rOESm8t4"></script>
+    <script src="static/js/torquehelpers.js"></script>
+    <script>
+        (function () {
+            'use strict';
+            Sentry.init({ dsn: 'https://e5a470fba2e046bb9de3778798bae9dd@sentry.jacekowski.org/2' });
+        })();
+    </script>
+    {% if logged_in == 1 %}
+    <script>
+        $(document).ready(function () {
+            if ("{{ timezone }}".length == 0) {
+                var visitortime = new Date();
+                var visitortimezone = "GMT " + -visitortime.getTimezoneOffset() / 60;
+                var timezoneurl = $(location).attr('href').split('?')[0].replace('session', 'timezone');
+                $.ajax({
+                    type: "GET",
+                    url: timezoneurl,
+                    data: 'time=' + visitortimezone,
+                    success: function () {
+                        location.reload();
+                    }
+                });
+            }
+        });
+    </script>
+    {% endif %}

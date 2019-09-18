@@ -1,33 +1,29 @@
 *{
     font-family: 'Lato', sans-serif;
 }
-html,body {
-    height: 100%;
-}
+
 #map-container {
-    height: 90%;
-    padding-top: 65px;
-    padding-left: 2%;
+    padding-top: 3px;
+    padding-left: 3px;
+    height: 100vh;
+    box-sizing: border-box;
 }
 #map-canvas {
     width: 96%;
-    height: 100%;
+    height: calc(100% - 3px);
     position: absolute;
 }
 #right-container {
-    height: 90%;
-    padding-top: 62px;
-    padding-right: 2%;
+    padding-top: 3px;
+    padding-left: 3px;
 }
 #right-cell {
-    height: 100%;
     width: 96%;
-    position: absolute;
 }
 .row.right-row {
     width: 100%;
-    padding-top: 15px;
-    padding-bottom: 15px;
+    padding-top: 1vh;
+    padding-bottom: 1vh;
     position: absolute;
 }
 .pull-left {
@@ -80,14 +76,6 @@ ul.chosen-choices li input {
     padding-bottom: 10px !rimportant;
 }
 
-@media (min-width: 768px){
-.navbar-nav{
-    margin: 0 auto;
-    display: table;
-    table-layout: fixed;
-    float: none;
-}
-}
 @media (max-width: 767px) {
 #map-container {
     height: 42%;
