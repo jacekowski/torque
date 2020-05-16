@@ -1,0 +1,19 @@
+<div>
+        <h4>Select variables to Plot</h4>
+        <div class="row center-block" style="padding-top:3px;">
+            <form method="get" role="form" id="formplotdata">
+                <select data-placeholder="Choose OBD2 data..." multiple class="chosen-select"
+                        style="width:100%;" id="plot_data"
+                        name="plotdata[]">
+                    <option value=""></option>
+                    {% for pid_id, pid_name in session_data.pid_names %}
+                        <option value="{{ pid_id }}"{% if session_data.plot_data[pid_id] is defined and session_data.plot_data[pid_id].display == true %} selected{% endif %}>{{ pid_name.name }}</option>
+                    {% endfor %}
+                </select>
+                <div align="center" style="padding-top:6px;">
+                    <input class="btn btn-info btn-sm" type="submit" value="Plot!">
+                </div>
+                <input type="hidden" name="id" value="{{ session_data.metadata.sid }}">
+            </form>
+        </div>
+</div>

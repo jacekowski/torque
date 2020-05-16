@@ -1,0 +1,235 @@
+{% include'header.twig' %}
+{% include 'maps/' ~ config.maps_provider ~ '_ajax.twig' %}
+<script>
+    $(document).ready(function() {
+        var session_select_form = $('#plot_selector');
+        $(session_select_form).submit(function(event) {
+            // Stop the browser from submitting the session_select_form.
+            event.preventDefault();
+        });
+
+        var variable_select_form = $('#variable_selector');
+        $(variable_select_form).submit(function(event) {
+            // Stop the browser from submitting the session_select_form.
+            event.preventDefault();
+        });
+
+        $(session_select_form).change(function(event) {
+            // Stop the browser from submitting the session_select_form.
+            event.preventDefault();
+            var formData = $(variable_select_form).serializeArray();
+            formData.push($(session_select_form).serializeArray()[0]);
+            formData.push({name: 'ajax', value: 'all'});
+            $.ajax({
+                type: 'GET',
+                url: $(session_select_form).attr('action'),
+                data: formData,
+                dataType: "json"
+            }).done(function(response) {
+                load_ajax_variables(response,null,null);
+                load_ajax_map(response,null,null);
+                load_ajax_plot(response,null,null);
+                load_ajax_session(response,null,null);
+            }).fail(function(data) {
+                alert("fail");
+            });
+        });
+
+        $(variable_select_form).change(function(event) {
+            // Stop the browser from submitting the session_select_form.
+            event.preventDefault();
+            var formData = $(variable_select_form).serializeArray();
+            formData.push($(session_select_form).serializeArray()[0]);
+            formData.push({name: 'ajax', value: 'plot'});
+            $.ajax({
+                type: 'GET',
+                url: $(session_select_form).attr('action'),
+                data: formData,
+                dataType: "json"
+            }).done(function(response) {
+                load_ajax_plot(response,null,null);
+            }).fail(function(data) {
+                alert("fail");
+            });
+        });
+
+
+        var formData = {ajax: 'sessions'};
+        //load sessions here
+        $.ajax({
+            type: 'GET',
+            url: $(session_select_form).attr('action'),
+            data: formData,
+            dataType: "json"
+        }).done(function(response) {
+            load_ajax_sessions(response,null,null);
+        }).fail(function(data) {
+            alert("fail");
+        });
+        $(session_select_form).trigger('change');
+
+    });
+    function load_ajax_plot(data, status, xhr){
+
+        $("#permalink").prop("href", "{{ config.base_url }}/?permalink="+data['permalink']); //update permalink address
+
+        var tbody = $("#data_container");
+        tbody.empty();
+
+        $.each( Array.from(hchart.series.length), function( key, val ) {
+            val.remove(false);
+        });
+        $.each( Array.from(hchart.axes), function( key, val ) {
+            if (val.horiz == false) {
+                val.remove(false);
+            }
+        });
+
+        var i = 0;
+        $.each( data.plot_data, function( key, val ) {
+            if (typeof val.display !== 'undefined' && val.display == true) {
+                tbody.append('<tr><td>'+val.name+'</td><td>'+parseFloat(val.min).toFixed(1)+'/'+parseFloat(val.max).toFixed(1)+'</td><td>'+parseFloat(val.avg).toFixed(1)+'</td></tr>');
+                //const arr = Object.keys(val.data).map(key => [parseInt(key), val.data[key]]);
+                var arr = [];
+                $.each( val.data, function( idx, value ) {
+                    arr.push([parseInt(idx),parseFloat(value)]);
+                });
+
+                var axisId = 'yaxis-' + (i++);
+
+                hchart.addAxis({
+                    title: {text: val.name},
+                    labels: {align: 'left', rotation: -90},
+                    id: axisId,
+
+                },false,false,false);
+
+                hchart.addSeries({
+                    name: val.name,
+                    yAxis: axisId,
+                    data: arr },false,false);
+
+            }
+        });
+        hchart.redraw();
+    }
+    function load_ajax_variables(data,status,xhr) {
+
+        var select = $("#plot_data");
+
+        var options = select.prop('options');
+
+        $.each( Array.from(options), function( key, val ) {
+            val.remove();
+        });
+
+        $.each( data.pid_names, function( key, val ) {
+            if ($("#plot_data option[value=key]").length == 0) {
+                if (typeof data.actual_variables[key] !== 'undefined') {
+                    var newOption = new Option(val.name, key, false, true);
+                } else {
+                    var newOption = new Option(val.name, key, false, false);
+                }
+                options.add(newOption);
+            }
+        });
+        select.trigger("chosen:updated");
+    }
+
+    function load_ajax_sessions(data,status,xhr){
+        var select = $("#id");
+        var options = select.prop('options');
+        select.html('');
+        $.each( data.sessions, function( key, val ) {
+
+            var newOption = new Option(val['date']+" (Length: "+val['length']+", Distance: "+val['distance']+" ("+val['model']+") ("+val['StartCity']+" -> "+val['EndCity']+")",key);
+            options.add(newOption);
+
+        });
+        select.trigger("chosen:updated");
+    }
+    function load_ajax_session(data,status,xhr){
+        var distance_travelled = $("#distance_travelled");
+        var fuel_total = $("#fuel_total");
+        var fuel_mpg = $("#fuel_mpg");
+        var fuel_lp100 = $("#fuel_lp100");
+        var start_city = $("#start_city");
+        var end_city = $("#end_city");
+
+        distance_travelled.text(data['metadata']['distance']);
+        fuel_total.text(data['metadata']['fuel']);
+        fuel_mpg.text(data['metadata']['economy_mpg']);
+        fuel_lp100.text(data['metadata']['economy_lp100']);
+        start_city.text(data['metadata']['StartCity']);
+        end_city.text(data['metadata']['EndCity']);
+    }
+</script>
+
+
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div id="map-container" class="col-md-7 col-xs-12">
+            <div id="map-canvas"></div>
+        </div>
+        <div id="right-container" class="col-md-5 col-xs-12">
+            <div id="right-cell">
+                {% if valid_permalink == false %}
+                    {% include 'selector_session_ajax.twig' %}
+                {% endif %}
+                <div>
+                    <div class="row center-block">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Min/Max</th>
+                                    <th>Mean</th>
+                                </tr>
+                                </thead>
+                                <tbody id="data_container">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <br>
+                </div>
+                <div>
+                    <div class="row center-block" style="padding-bottom:18px;">
+                        <div style="padding-top:10px;text-align:center;">
+                            <h5><span class="label label-primary">Distance travelled : <var id="distance_travelled"></var>, Fuel : <var id="fuel_total"></var>l, MPG : <var id="fuel_mpg"></var>, l/100km : <var id="fuel_lp100"></var></span></h5>
+                        </div>
+                        <div style="padding-top:10px;text-align:center;">
+                            <h5><span class="label label-primary">Start City : <var id="start_city"></var>, End City : <var id="end_city"></var></span></h5>
+                        </div>
+                        <div style="padding-top:1px;text-align:center;">
+                            <h5><span class="label label-primary"><a id="permalink" href="">Permalink</a> </span></h5>
+                        </div>
+
+                </div>
+                </div>
+                {% if valid_permalink == false %}
+                    {% if config.twig_profiling == true %}
+                        <div>
+                            <div class="row center-block" style="padding-bottom:18px;">
+                                <div style="padding-top:10px;">
+                                    <pre>%twig_profiling_placeholder%</pre>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        {% include 'data_chart_ajax.twig' %}
+    </div>
+
+</div>
+</body>
+</html>

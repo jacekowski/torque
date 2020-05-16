@@ -1,0 +1,42 @@
+<div>
+    <h4>Select Session</h4>
+    <div class="row center-block" style="padding-bottom:4px;">
+        <form method="get" class="form-horizontal" role="form">
+            <input type="hidden" name="manager" value="manager">
+            <select id="id" name="id" class="form-control chosen-select" onchange="this.form.submit()"
+                    data-placeholder="Select Session..." style="width:100%;">
+                {% for session_id, session_details in sessions %}
+                    <option value="{{ session_id }}"{% if session_id == first_session_data.metadata.sid %} selected {% endif %}>{{ session_details.date }} {% if config.show_session_length == true %}  (Length: {{ session_details.length }}, Distance: {{ session_details.distance }}) {% endif %} ({{ session_details.model }})</option>
+                {% endfor %}
+            </select>
+            <noscript>
+                <input type="submit" class="input-sm">
+            </noscript>
+        </form>
+        <div class="btn-group btn-group-justified">
+            <table style="width:100%">
+                <tr>
+                    <td>
+                        <form method="post" class="form-horizontal" role="form"
+                              action="?manager=merge&id={{ first_session_data.metadata.sid }}"
+                              id="formmerge">
+                            <div align="center" style="padding-top:6px;"><input class="btn btn-info btn-sm"
+                                                                                type="submit" id="formmerge"
+                                                                                name="merge" value="Merge"
+                                                                                title="Merge this session with the next session."  />
+                            </div>
+                        </form>
+                    </td>
+                    <script type="text/javascript">
+                        //Adding a confirmation dialog to above forms
+                        $('#formmerge').submit(function () {
+                            var c = confirm("Click OK to merge sessions (gap: {{ session_gap }}s).");
+                            return c; //you can just return c because it will be true or false
+                        });
+                    </script>
+
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>

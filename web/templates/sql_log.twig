@@ -1,0 +1,17 @@
+<table border=1><tr><th>Query</th><th>Time (ms)</th><th>Error/Row Count</th></tr>
+    {% set total_sql_time = 0 %}
+    {% for log_entry in sql_log %}
+        {% if log_entry.type == 'prepared_query' %}
+            {% set total_sql_time = total_sql_time + log_entry.time %}
+            <tr><td> [PQ]
+                    {% for q_parameter, q_value in log_entry.input_parameters %}
+                        {{ q_parameter }} => {{ q_value }}
+                    {% endfor %}
+                </td><td>{{ log_entry.time }}</td><td>{{ log_entry.result }}</td></tr>
+        {% else %}
+            {% set total_sql_time = total_sql_time + log_entry.time %}
+            <tr><td>{{ log_entry.query }}</td><td>{{ log_entry.time }}</td><td>{{ log_entry.result }}</td></tr>
+        {% endif %}
+    {% endfor %}
+    <tr><th>{{ sql_log|length }} queries</th><th>{{ total_sql_time }}</th></tr>
+</table>

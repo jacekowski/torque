@@ -1,0 +1,52 @@
+{% include'../header.twig' %}
+{% include 'manager/manager_maps_gmaps.twig' %}
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div id="map-container" class="col-md-7 col-xs-12">
+            <div id="map-canvas"></div>
+        </div>
+        <div id="right-container" class="col-md-5 col-xs-12">
+            <div id="right-cell">
+                {% include 'manager_session_selector.twig' %}
+                <div>
+                    <div class="row center-block" style="padding-bottom:18px;">
+                        <div style="padding-top:10px;text-align:center;">
+                            <h5><span class="label label-primary">Distance travelled : {{ first_session_data.metadata.distance }}, Fuel : {{ first_session_data.metadata.fuel }}l, MPG : {{ first_session_data.metadata.economy_mpg }}, l/100km : {{ first_session_data.metadata.economy_lp100 }}</span></h5>
+                        </div>
+                        <div style="padding-top:10px;text-align:center;">
+                            <h5><span class="label label-primary">Start City : {{ first_session_data.start_city.AccentCity }}, End City : {{ first_session_data.end_city.AccentCity }}</span></h5>
+                        </div>
+
+                        <div style="padding-top:10px;text-align:center;">
+                            <h5><span class="label label-primary">Distance travelled : {{ second_session_data.metadata.distance }}, Fuel : {{ second_session_data.metadata.fuel }}l, MPG : {{ second_session_data.metadata.economy_mpg }}, l/100km : {{ second_session_data.metadata.economy_lp100 }}</span></h5>
+                        </div>
+                        <div style="padding-top:10px;text-align:center;">
+                            <h5><span class="label label-primary">Start City : {{ second_session_data.start_city.AccentCity }}, End City : {{ second_session_data.end_city.AccentCity }}</span></h5>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="row center-block" style="padding-bottom:18px;">
+                        <div align="center" style="padding-top:10px;">
+                            {% include '../sql_log.twig' %}
+                        </div>
+                    </div>
+                </div>
+                {% if config.twig_profiling == true %}
+                    <div>
+                        <div class="row center-block" style="padding-bottom:18px;">
+                            <div style="padding-top:10px;">
+                                <pre>%twig_profiling_placeholder%</pre>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

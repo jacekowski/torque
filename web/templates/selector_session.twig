@@ -1,0 +1,21 @@
+<div>
+    <h4>Select Session</h4>
+    <div class="row center-block" style="padding-bottom:4px;">
+        <form method="get" class="form-horizontal" role="form">
+            <select id="id" name="id" class="form-control chosen-select" onchange="this.form.submit()"
+                    data-placeholder="Select Session..." style="width:100%;">
+                {% for session_id, session_details in sessions %}
+                    <option value="{{ session_id }}"{% if session_id == session_data.metadata.sid %} selected {% endif %}>{% if session_id == session_data.metadata.sid %} * {% endif %}{{ session_details.date }} {% if config.show_session_length == true %}  (Length: {{ session_details.length }}, Distance: {{ session_details.distance }}) {% endif %} ({{ session_details.model }}) ({{ session_details.StartCity }} -> {{ session_details.EndCity }}) {% if session_id == session_data.metadata.sid %}  {% endif %}</option>
+                {% endfor %}
+            </select>
+            {% for selected_variable,data in session_data.plot_data %}
+                {% if session_data.plot_data[selected_variable].display == true %}
+                <input type="hidden" name="plotdata[]" value="{{ selected_variable }}">
+                {% endif %}
+            {% endfor %}
+            <noscript>
+                <input type="submit" class="input-sm">
+            </noscript>
+        </form>
+    </div>
+</div>

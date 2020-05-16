@@ -1,0 +1,79 @@
+<script src="{{ config.base_url }}/hc/js/highcharts.js"></script>
+<script src="{{ config.base_url }}/hc/js/modules/data.js"></script>
+<div id="report"></div>
+<div id="hccontainer" class="col-md-12 col-xs-12"></div>
+
+<script>
+    var hchart;
+    function create_chart() {
+        var $report = $('#report');
+
+        Highcharts.setOptions({
+            time: {
+                useUTC : false
+            }
+        });
+
+        hchart = Highcharts.chart('hccontainer',{
+            chart: {
+                events: {
+                    selection: function (event) {
+                        isSelectionFired = true;
+                    }
+                },
+                zoomType: 'x'
+            },
+            title: {
+                text: 'Chart'
+            },
+            xAxis: {
+                type: 'datetime',
+                events: {
+                    afterSetExtremes: function (event) {
+                        if (event.userMin && event.userMax && isSelectionFired) {
+                            var dataX = {value: 0, count: 0};
+                            var series = this.series[0];
+                            var points = series.points;
+                            var min = event.min, max = event.max;
+
+                            for (var i = 0; i < points.length; i++) {
+                                if (points[i].x >= min && points[i].x <= max) {
+                                    dataX.value += points[i].y;
+                                    dataX.count += 1;
+                                }
+                            }
+
+                            isSelectionFired = false;
+
+                            $report.html('avgY: ' + dataX.value / dataX.count);
+                        }
+                    }
+                }
+            },
+            legend: {
+                align: 'left',
+                verticalAlign: 'top',
+                y: 20,
+                floating: true,
+                borderWidth: 0
+            },
+            tooltip: {
+                shared: true,
+                crosshairs: true
+            },
+
+            plotOptions: {
+                series: {
+                    point: {
+                        events: {
+                            mouseOver: function () {
+                                update_map_marker(this.index);
+                            }
+                        }
+                    }
+                }
+            },
+        });
+    }
+    create_chart();
+</script>

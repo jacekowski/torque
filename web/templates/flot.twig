@@ -1,0 +1,82 @@
+<!-- Flot Javascript files -->
+<script src="{{ config.base_url }}/static/js/jquery.flot.js"></script>
+<script src="{{ config.base_url }}/static/js/jquery.flot.axislabels.js"></script>
+<script src="{{ config.base_url }}/static/js/jquery.flot.hiddengraphs.js"></script>
+<script src="{{ config.base_url }}/static/js/jquery.flot.multihighlight-delta.js"></script>
+<script src="{{ config.base_url }}/static/js/jquery.flot.selection.js"></script>
+<script src="{{ config.base_url }}/static/js/jquery.flot.time.js"></script>
+<script src="{{ config.base_url }}/static/js/jquery.flot.tooltip.min.js"></script>
+<script src="{{ config.base_url }}/static/js/jquery.flot.updater.js"></script>
+<script src="{{ config.base_url }}/static/js/jquery.flot.resize.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+
+        {% for plot_id, plot_entry in session_data.plot_data %}
+        {% if plot_entry.display == true %}
+        var s{{ plot_id }} = [{% for time, value in plot_entry.data %}[{{ time }}, {{ value }}], {% endfor %}];
+        {% endif %}
+        {% endfor %}
+
+        var flotData = [
+            {% set yaxis_seq = 0 %}
+            {% for plot_id, plot_entry in session_data.plot_data %}
+            {% if plot_entry.display == true %}
+            {% set yaxis_seq = yaxis_seq + 1 %}
+            {data: s{{ plot_id }}, label: "{{ plot_entry.name }}", yaxis: {{ yaxis_seq }}},
+            {% endif %}
+            {% endfor %}
+        ];
+
+        function doPlot() {
+            $.plot("#placeholder", flotData, {
+                    xaxes: [{
+                        mode: "time",
+                        timezone: "browser",
+                        axisLabel: "Time",
+                        timeformat: "%H:%M",
+                        twelveHourClock: false
+                    }],
+                    yaxes: [
+                        {% for plot_id, plot_entry in session_data.plot_data %}
+                        {% if plot_entry.display == true %}
+
+                        {alignTicksWithAxis: 1, axisLabel: "{{ plot_entry.name }}"},
+
+                        {% endif %}
+                        {% endfor %}
+                    ],
+                    legend: {
+                        position: "nw",
+                        hideable: true,
+                        backgroundOpacity: 0.1,
+                        margin: 0
+                    },
+                    grid: {
+                        hoverable: false,
+                        clickable: true
+                    },
+                    tooltip: false,
+                    tooltipOpts: {
+                        content: "%s at %x: %y",
+                        xDateFormat: "%H:%M",
+                        twelveHourClock: false,
+                    }
+                }
+            )
+        }
+
+        doPlot();
+
+        $("button").click(function () {
+            doPlot();
+        });
+    });
+</script>
+<div>
+    <div class="row center-block" style="padding-bottom:5px;">
+        <div class="demo-container">
+            <div id="placeholder" class="demo-placeholder" style="height:300px;"></div>
+        </div>
+    </div>
+</div>

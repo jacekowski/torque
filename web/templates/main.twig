@@ -1,0 +1,100 @@
+{% include 'header.twig' %}
+{% include 'maps/' ~ config.maps_provider ~ '.twig' %}
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div id="map-container" class="col-md-7 col-xs-12">
+            <div id="map-canvas"></div>
+        </div>
+        <div id="right-container" class="col-md-5 col-xs-12">
+            <div id="right-cell">
+                {% if valid_permalink == false %}
+                    {% include 'selector_session.twig' %}
+                    {% include 'selector_pid.twig' %}
+                {% endif %}
+                {% if config.show_flot == true %}
+                    {% include 'flot.twig' %}
+                {% endif %}
+                <div>
+                    <div class="row center-block">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Min/Max</th>
+                                    <th>Mean</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for plot_id, plot_entry in session_data.plot_data %}
+                                    {% if plot_entry.display == true %}
+                                        <tr>
+                                            <td><strong>{{ plot_entry.name }}</strong></td>
+                                            <td>{{ plot_entry.min|round(1, 'common') }}/{{ plot_entry.max|round(1, 'common') }}</td>
+                                            <td>{{ plot_entry.avg|round(1, 'common') }}</td>
+                                        </tr>
+                                    {% endif %}
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <br>
+                </div>
+                <div>
+                    <div class="row center-block" style="padding-bottom:18px;">
+                        <div class="btn-group btn-group-justified">
+                            <a class="btn btn-default" role="button"
+                               href="?export&id={{ session_data.metadata.sid }}&filetype=csv">CSV</a>
+                            <a class="btn btn-default" role="button"
+                               href="?export&id={{ session_data.metadata.sid }}&filetype=json">JSON</a>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="row center-block" style="padding-bottom:10px;">
+                        <div style="padding-top:1px;text-align:center;">
+                            <h5><span class="label label-primary">Distance travelled : {{ session_data.metadata.distance }}, Fuel : {{ session_data.metadata.fuel }}l, MPG : {{ session_data.metadata.economy_mpg }}, l/100km : {{ session_data.metadata.economy_lp100 }}</span></h5>
+                        </div>
+                        <div style="padding-top:1px;text-align:center;">
+                            <h5><span class="label label-primary">Start City : {{ session_data.start_city.AccentCity }}, End City : {{ session_data.end_city.AccentCity }}</span></h5>
+                        </div>
+                        <div style="padding-top:1px;text-align:center;">
+                            <h5><span class="label label-primary"><a href="{{ config.base_url }}/?permalink={{ permalink }}">Permalink</a> </span></h5>
+                        </div>
+                        <div style="padding-top:1px;text-align:center;">
+                            <h5><span class="label label-primary">Version {{ config.version }} </span></h5>
+                        </div>
+                    </div>
+                </div>
+                {% if valid_permalink == false %}
+                    <div>
+                        <div class="row center-block" style="padding-bottom:18px;">
+                            <div align="center" style="padding-top:10px;">
+                                {% include 'sql_log.twig' %}
+                            </div>
+                        </div>
+                    </div>
+                    {% if config.twig_profiling == true %}
+                        <div>
+                            <div class="row center-block" style="padding-bottom:18px;">
+                                <div style="padding-top:10px;">
+                                    <pre>%twig_profiling_placeholder%</pre>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        {% include 'data_chart.twig' %}
+    </div>
+
+</div>
+</body>
+</html>

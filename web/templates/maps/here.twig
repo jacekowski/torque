@@ -1,0 +1,68 @@
+<script src="https://js.api.here.com/v3/3.1/mapsjs-core.js" type="text/javascript" charset="utf-8"></script>
+<script src="https://js.api.here.com/v3/3.1/mapsjs-service.js" type="text/javascript" charset="utf-8"></script>
+<script src="https://js.api.here.com/v3/3.1/mapsjs-ui.js" type="text/javascript" charset="utf-8"></script>
+<script src="https://js.api.here.com/v3/3.1/mapsjs-mapevents.js" type="text/javascript" charset="utf-8"></script>
+<link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.1/mapsjs-ui.css" />
+
+<script>
+    // The potentially large array of LatLng objects for the roadmap
+
+    var points = [
+        {% for point in session_data.geopath %}
+        {{ '{' }} lat;: {{ point.lat1 }}, lng:  {{ point.lon1 }} {{ '}' }},
+        {% endfor %}
+    ]
+    var marker;
+    var map;
+
+    function initialize() {
+        var mapDiv = document.getElementById('map-canvas');
+
+        var platform = new H.service.Platform({
+            'apikey': '{{ config.here_maps_api_key }}'
+        });
+
+        // Obtain the default map types from the platform object:
+        var defaultLayers = platform.createDefaultLayers();
+
+        // Instantiate (and display) a map object:
+        var map = new H.Map(
+            mapDiv,
+            defaultLayers.vector.normal.map,
+            {
+                zoom: 10,
+                center: { lat: 52.5, lng: 13.4 }
+            });
+
+        var behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
+        var ui = H.ui.UI.createDefault(map, defaultLayers);
+
+        var linestring = new H.geo.LineString();
+        points.forEach(function(point) {
+            linestring.pushPoint(point);
+        });
+
+        // Initialize a polyline with the linestring:
+        var polyline = new H.map.Polyline(linestring, { style: { lineWidth: 10 }});
+
+        // Add the polyline to the map:
+        map.addObject(polyline);
+
+        // Zoom the map to fit the rectangle:
+        map.getViewModel().setLookAtData({bounds: polyline.getBoundingBox()});
+
+        marker = new H.map.Marker(points[0]);
+        map.addObject(marker);
+
+
+    }
+    window.onload = initialize;
+
+    function update_map_marker(marker_index){
+        if (marker_index>=points.length){
+            marker_index = points.length-1;
+        }
+        marker.setGeometry(points[marker_index]);
+    }
+
+</script>

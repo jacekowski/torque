@@ -1,0 +1,40 @@
+{% include'header.twig' %}
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div id="right-container" class="col-md-5 col-xs-12">
+            <div id="right-cell">
+                <div>
+                    <div class="row center-block" style="padding-bottom:18px;">
+                        <div align="center" style="padding-top:10px;">
+                            <table border=1><tr><th>Date</th><th>Length</th><th>Distance</th><th>Start City</th><th>End City</th><th>Total Fuel</th><th>L/100km</th><th>sid</th></tr>
+                                {% for session_id, session_details in sessions %}
+                                    <tr><td>{{ session_details.date }}</td><td>{{ session_details.length }}</td><td>{{ session_details.distance }}</td><td>{{ session_details.StartCity }}</td><td>{{ session_details.EndCity }}</td><td>{{ session_details.fuel }}</td><td>{{ session_details.economy_lp100 }}</td><td><a href="?id={{ session_details.sid }}">{{ session_details.sid }}</a></td></tr>
+                                {% endfor %}
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="row center-block" style="padding-bottom:18px;">
+                        <div align="center" style="padding-top:10px;">
+                            {% include 'sql_log.twig' %}
+                        </div>
+                    </div>
+                </div>
+                {% if config.twig_profiling == true %}
+                    <div>
+                        <div class="row center-block" style="padding-bottom:18px;">
+                            <div style="padding-top:10px;">
+                                <pre>%twig_profiling_placeholder%</pre>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<script src="https://maps.googleapis.com/maps/api/js?key={{ config.google_maps_api_key }}"></script>
+<script>
+    // The potentially large array of LatLng objects for the roadmap
+
+
+    var marker;
+    var map;
+
+    var path_o = [];
+    var line_o = [];
+
+    function initialize() {
+        var mapDiv = document.getElementById('map-canvas');
+
+        map = new google.maps.Map(mapDiv, {
+            mapTypeId: google.maps.MapTypeId.ROADMAP,
+            mapTypeControl: true,
+            mapTypeControlOptions: {
+                style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+                poistion: google.maps.ControlPosition.TOP_RIGHT,
+                mapTypeIds: [google.maps.MapTypeId.ROADMAP,
+                    google.maps.MapTypeId.TERRAIN,
+                    google.maps.MapTypeId.HYBRID,
+                    google.maps.MapTypeId.SATELLITE]
+            },
+            navigationControl: true,
+            navigationControlOptions: {
+                style: google.maps.NavigationControlStyle.ZOOM_PAN
+            },
+            scaleControl: true,
+            disableDoubleClickZoom: false,
+            draggable: true,
+            streetViewControl: true,
+            draggableCursor: 'move'
+        });
+
+        // Create a boundary using the path to automatically configure
+        // the default centering location and zoom.
+        var bounds = new google.maps.LatLngBounds();
+
+        {% for point in session_data.geopath %}
+
+        path_o[{{ loop.index0 }}] = [ new google.maps.LatLng({{ point.lat1 }}, {{ point.lon1 }}), new google.maps.LatLng({{ point.lat2 }}, {{ point.lon2 }}) ];
+        line_o[{{ loop.index0 }}] = new google.maps.Polyline({ path: path_o[{{ loop.index0 }}], strokeColor: '{{ point.colour }}', strokeOpacity: 0.75, strokeWeight: 4 }).setMap(map);
+        {% endfor %}
+
+        bounds.extend(new google.maps.LatLng({{ session_data.bounds.min.lat }}, {{ session_data.bounds.min.lon }}));
+        bounds.extend(new google.maps.LatLng({{ session_data.bounds.max.lat }}, {{ session_data.bounds.max.lon }}));
+
+        marker = new google.maps.Marker({
+            position: path_o[0][0],
+            map: map,
+            title: 'marker'
+        });
+        map.fitBounds(bounds);
+
+    }
+    google.maps.event.addDomListener(window, 'load', initialize);
+
+    function update_map_marker(marker_index){
+        if (marker_index>=path_o.length){
+            marker_index = path_o.length-1;
+        }
+        marker.setPosition(path_o[marker_index][0]);
+    }
+</script>

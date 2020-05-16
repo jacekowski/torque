@@ -1,49 +1,59 @@
 <?php
+/*
+ * this file initialises framework, loads config file, and initialises database connection
+ */
+
+use Twig\Environment;
+use Twig\Extension\ProfilerExtension;
+use Twig\Loader\FilesystemLoader;
+use Twig\Profiler\Profile;
+
 require __DIR__ . '/vendor/autoload.php';
 require_once('config.php');
+//initialise sentry as early as possible
+Sentry\init(['dsn' => $config['sentry_dsn'], 'release' => $config['version']]);
 
-Sentry\init(['dsn' => $sentry_dsn ]);
-
+//initalise database connection
 require_once('logged_pdo.php');
-require_once("functions.php");
+try {
+    $pdo = new LoggedPDO($config['db']['dsn'], $config['db']['user'], $config['db']['pass'], $config['db']['options']);
+} catch (PDOException $e) { //add better error handling later
+    throw new PDOException($e->getMessage(), (int)$e->getCode());
+}
+
+require_once('functions.php');
 
 session_set_cookie_params(0, dirname($_SERVER['SCRIPT_NAME']));
 session_start();
+$data = array();
+$data['config'] = $config;
 
-require_once('auth_user.php');
-//require_once("del_session.php");
-//require_once("merge_sessions.php");
+require_once('auth_functions.php');
+$user = new user_management($pdo);
 
-try {
-    $pdo = new LoggedPDO($dsn, $db_user, $db_pass, $db_options);
-} catch (\PDOException $e) {
-    throw new \PDOException($e->getMessage(), (int)$e->getCode());
-}
+require_once('user_data.php');
 
-if (isset($debug) && $debug == true) {
+
+if (isset($config['debug']) && $config['debug'] == true) {
     require_once('request_logger.php');
     $logger = new RequestLogger($pdo);
 }
 
-if (isset($_GET['time'])){
-    $_SESSION['time'] = $_GET['time'];
-}
-if (isset($_SESSION['time'])) {
-    $timezone = $_SESSION['time'];
-} else {
-    $timezone ="";
-}
+date_default_timezone_set('Europe/London');
 
-date_default_timezone_set("Europe/London");
-
-$loader = new \Twig\Loader\FilesystemLoader('templates');
-$twig = new \Twig\Environment($loader, [
-    'cache' => false, //'templates_c',
+$loader = new FilesystemLoader('templates');
+$twig = new Environment($loader, [
+    'cache' => 'templates_c',
     'autoescape' => false,
-    'auto_reload' => false,
+    'auto_reload' => true,
 ]);
 
-$profile = new \Twig\Profiler\Profile();
-$twig->addExtension(new \Twig\Extension\ProfilerExtension($profile));
+if ($config['twig_profiling'] == true) {
+    $profile = new Profile();
+    $twig->addExtension(new ProfilerExtension($profile));
+}
+
+require_once('permalink_functions.php');
+require_once('ui_functions.php');
 
 ?>

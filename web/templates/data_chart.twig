@@ -1,4 +1,4 @@
-<script src="hc/js/highcharts.js"></script>
+<script src="{{ config.base_url }}/hc/js/highcharts.js"></script>
 <div id="report"></div>
 <div id="hccontainer" class="col-md-12 col-xs-12"></div>
 
@@ -45,8 +45,6 @@
                             isSelectionFired = false;
 
                             $report.html('avgY: ' + dataX.value / dataX.count);
-                        } else {
-                            $report.html('Selection reset');
                         }
                     }
                 }
@@ -68,8 +66,7 @@
                     point: {
                         events: {
                             mouseOver: function () {
-                                marker.setPosition(path[this.index]);
-                                //$reporting.html('x: ' + this.x + ', y: ' + this.y);
+                                update_map_marker(this.index);
                             }
                         }
                     }
@@ -78,23 +75,30 @@
 
 
             yAxis: [
-                {% for plot_id, plot_entry in plot_data %}
+                {% for plot_id, plot_entry in session_data.plot_data %}
+                {% if plot_entry.display == true %}
                 {
                     title: {text: '{{ plot_entry.name }}'},
                     labels: {align: 'left', rotation: -90},
 
                 },
+                {% endif %}
                 {% endfor %}
             ],
 
 
             series: [
-                {% for plot_id, plot_entry in plot_data %}
+                {% for plot_id, plot_entry in session_data.plot_data %}
+                {% if plot_entry.display == true %}
                 {
                     name: '{{ plot_entry.name }}',
                     yAxis: {{ loop.index0 }},
-                    data: [{% for time, value in plot_entry.data %}[{{ time }}, {{ value }}], {% endfor %}],
+                    data: [
+                        {% for time, value in plot_entry.data %}
+                        [{{ time }}, {{ value }}],
+                        {% endfor %}],
                 },
+                {% endif %}
                 {% endfor %}
             ]
         });

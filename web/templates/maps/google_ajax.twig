@@ -1,0 +1,75 @@
+<script src="https://maps.googleapis.com/maps/api/js?key={{ config.google_maps_api_key }}"></script>
+<script>
+    var marker;
+    var map;
+    function initialize() {
+        var mapDiv = document.getElementById('map-canvas');
+
+        map = new google.maps.Map(mapDiv, {
+            mapTypeId: google.maps.MapTypeId.ROADMAP,
+            mapTypeControl: true,
+            mapTypeControlOptions: {
+                style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+                poistion: google.maps.ControlPosition.TOP_RIGHT,
+                mapTypeIds: [google.maps.MapTypeId.ROADMAP,
+                    google.maps.MapTypeId.TERRAIN,
+                    google.maps.MapTypeId.HYBRID,
+                    google.maps.MapTypeId.SATELLITE]
+            },
+            navigationControl: true,
+            navigationControlOptions: {
+                style: google.maps.NavigationControlStyle.ZOOM_PAN
+            },
+            scaleControl: true,
+            disableDoubleClickZoom: false,
+            draggable: true,
+            streetViewControl: true,
+            draggableCursor: 'move'
+        });
+    }
+
+    var path_o = [];
+    var line_o = [];
+
+    function load_ajax_map(data,status,xhr){
+        $.each ( line_o, function ( key, val ) {
+            val.setMap(null);
+        });
+
+        path_o = [];
+        line_o = [];
+        var i = 0;
+
+        $.each( data.coordinates, function( key, val ) {
+            path_o[i] = [new google.maps.LatLng(val.lat1, val.lon1),new google.maps.LatLng(val.lat2, val.lon2)];
+            line_o[i] = new google.maps.Polyline({ path: path_o[i], strokeColor: val.colour, strokeOpacity: 0.75, strokeWeight: 4 });
+            line_o[i].setMap(map);
+            i++;
+        });
+
+        var bounds = new google.maps.LatLngBounds();
+        bounds.extend(new google.maps.LatLng(data.bounds.min.lat, data.bounds.min.lon ));
+        bounds.extend(new google.maps.LatLng(data.bounds.max.lat, data.bounds.max.lon ));
+        map.fitBounds(bounds);
+
+        if (typeof marker !== google.maps.Marker) {
+            marker = new google.maps.Marker({
+                position: path_o[0][0],
+                map: map,
+                title: 'marker'
+            });
+        } else {
+            marker.setPosition(path_o[this.index][0])
+        }
+    }
+
+    google.maps.event.addDomListener(window, 'load', initialize);
+
+    function update_map_marker(marker_index){
+        if (marker_index>=path_o.length){
+            marker_index = path_o.length-1;
+        }
+        marker.setPosition(path_o[marker_index][0]);
+    }
+
+</script>

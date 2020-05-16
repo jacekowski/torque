@@ -4,6 +4,10 @@
         "twig/twig": "^2.0",
         "php-http/curl-client": "^2.0",
         "guzzlehttp/psr7": "^1.6",
-        "sentry/sdk": "^2.0"
+        "sentry/sdk": "^2.0",
+        "sabre/dav": "^4.0",
+        "ext-json": "*",
+        "ext-ldap": "*",
+        "ext-PDO": "*"
     }
 }

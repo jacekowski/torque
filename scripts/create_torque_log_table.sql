@@ -24,7 +24,7 @@ CREATE TABLE `cities` (
   `Latitude` float NOT NULL,
   `Longitude` float NOT NULL,
   `GeoLoc` point NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -35,35 +35,22 @@ CREATE TABLE `cities` (
 CREATE TABLE `debug_log` (
   `idx` bigint(20) NOT NULL,
   `time` bigint(20) NOT NULL,
+  `version` varchar(16) NOT NULL DEFAULT '0',
   `request` varchar(2048) NOT NULL,
-  `queries` varchar(4096) NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+  `queries` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `defaultunit`
+-- Table structure for table `defaultunit_v2`
 --
 
-CREATE TABLE `defaultunit` (
-  `idx` int(11) NOT NULL,
-  `v` varchar(1) NOT NULL,
-  `session` varchar(15) NOT NULL,
-  `id` varchar(32) NOT NULL,
-  `eml` varchar(64) NOT NULL,
-  `time` varchar(15) NOT NULL,
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
--- --------------------------------------------------------
-
---
--- Stand-in structure for view `monthly_totals`
--- (See below for the actual view)
---
-CREATE TABLE `monthly_totals` (
-`date_formatted` varchar(6)
-,`distance` double
-);
+CREATE TABLE `defaultunit_v2` (
+  `session` bigint(20) NOT NULL,
+  `pid` int(11) NOT NULL,
+  `unit` varchar(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -78,7 +65,7 @@ CREATE TABLE `permalink` (
   `variables` varchar(4096) NOT NULL,
   `type` varchar(255) NOT NULL DEFAULT '',
   `active` tinyint(1) NOT NULL DEFAULT '0'
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -91,20 +78,20 @@ CREATE TABLE `permalink_log` (
   `time` bigint(20) NOT NULL,
   `remote_addr` varchar(64) NOT NULL,
   `remote_details` text NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `profile`
+-- Table structure for table `profile_v2`
 --
 
-CREATE TABLE `profile` (
+CREATE TABLE `profile_v2` (
   `idx` int(11) NOT NULL,
   `v` int(1) NOT NULL,
   `session` bigint(15) NOT NULL,
   `id` char(32) NOT NULL,
-  `eml` varchar(64) NOT NULL,
+  `eml` varchar(256) NOT NULL,
   `time` bigint(15) NOT NULL,
   `profileName` varchar(32) NOT NULL DEFAULT '0' COMMENT 'Profile Name',
   `profileFuelCost` float NOT NULL DEFAULT '0' COMMENT 'Fuel Cost',
@@ -115,37 +102,23 @@ CREATE TABLE `profile` (
   `MaxTime` bigint(20) NOT NULL DEFAULT '0',
   `SessionSize` bigint(20) NOT NULL DEFAULT '0',
   `SessionDistance` float NOT NULL DEFAULT '0',
-  `SessionFuel` float NOT NULL DEFAULT '0' COMMENT 'Fuel quantity in ml'
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+  `SessionFuel` float NOT NULL DEFAULT '0' COMMENT 'Fuel quantity in ml',
+  `CityStart` bigint(20) NOT NULL DEFAULT '0',
+  `CityEnd` bigint(20) NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `raw_logs`
+-- Table structure for table `raw_logs_v2`
 --
 
-CREATE TABLE `raw_logs` (
-  `idx` int(11) NOT NULL,
-  `v` int(1) NOT NULL,
-  `session` bigint(15) NOT NULL,
-  `id` char(32) NOT NULL,
-  `time` bigint(15) NOT NULL,
-  `eml` varchar(255) DEFAULT NULL,
-  `kff1005` double NOT NULL DEFAULT '0' COMMENT 'GPS Longitude',
-  `kff1006` double NOT NULL DEFAULT '0' COMMENT 'GPS Latitude',
-  `kff1001` float NOT NULL DEFAULT '0' COMMENT 'Speed (GPS)',
-  `kff1007` float NOT NULL DEFAULT '0' COMMENT 'GPS Bearing',
-  `k11` float NOT NULL DEFAULT '0' COMMENT 'Throttle Position',
-  `k5` float NOT NULL DEFAULT '0' COMMENT 'Engine Coolant Temp',
-  `kc` float NOT NULL DEFAULT '0' COMMENT 'Engine RPM',
-  `kd` float NOT NULL DEFAULT '0' COMMENT 'Speed (OBD)',
-  `kf` float NOT NULL DEFAULT '0' COMMENT 'Intake Air Temp',
-  `kff1226` float NOT NULL DEFAULT '0' COMMENT 'Horsepower',
-  `kff1220` float NOT NULL DEFAULT '0' COMMENT 'Accel (X)',
-  `kff1221` float NOT NULL DEFAULT '0' COMMENT 'Accel (Y)',
-  `k46` float NOT NULL DEFAULT '0' COMMENT 'Ambient Air Temp',
-  `kff1270` float NOT NULL DEFAULT '0' COMMENT 'Barometer (on Android device)',
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+CREATE TABLE `raw_logs_v2` (
+  `session` bigint(13) NOT NULL,
+  `time` bigint(13) NOT NULL,
+  `pid` int(8) NOT NULL,
+  `value` decimal(21,10) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -155,26 +128,34 @@ CREATE TABLE `raw_logs` (
 
 CREATE TABLE `users` (
   `uid` int(11) NOT NULL,
-  `name` varchar(60) NOT NULL,
-  `pass` varchar(255) NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+  `name` varchar(60) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `userunit`
+-- Table structure for table `userunit_v2`
 --
 
-CREATE TABLE `userunit` (
-  `idx` int(11) NOT NULL,
-  `v` varchar(1) NOT NULL,
-  `session` bigint(15) NOT NULL,
-  `id` varchar(32) NOT NULL,
-  `eml` varchar(64) NOT NULL,
-  `time` varchar(15) NOT NULL,
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+CREATE TABLE `userunit_v2` (
+  `session` bigint(20) NOT NULL,
+  `pid` int(11) NOT NULL,
+  `unit` varchar(50) DEFAULT NULL,
+  `fullName` varchar(50) DEFAULT NULL,
+  `shortName` varchar(50) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
+
+--
+-- Table structure for table `user_settings`
+--
+
+CREATE TABLE `user_settings` (
+  `uid` int(11) NOT NULL,
+  `parameter` varchar(60) NOT NULL,
+  `value` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Indexes for dumped tables
@@ -186,7 +167,8 @@ CREATE TABLE `userunit` (
 ALTER TABLE `cities`
   ADD PRIMARY KEY (`idx`),
   ADD KEY `geo2` (`Latitude`,`Longitude`),
-  ADD SPATIAL KEY `geo` (`GeoLoc`);
+  ADD SPATIAL KEY `geo` (`GeoLoc`),
+  ADD KEY `country` (`Country`) USING BTREE;
 
 --
 -- Indexes for table `debug_log`
@@ -195,13 +177,10 @@ ALTER TABLE `debug_log`
   ADD PRIMARY KEY (`idx`);
 
 --
--- Indexes for table `defaultunit`
+-- Indexes for table `defaultunit_v2`
 --
-ALTER TABLE `defaultunit`
-  ADD PRIMARY KEY (`idx`),
-  ADD UNIQUE KEY `idx` (`idx`),
-  ADD KEY `session` (`session`,`id`),
-  ADD KEY `id` (`id`);
+ALTER TABLE `defaultunit_v2`
+  ADD UNIQUE KEY `session` (`session`);
 
 --
 -- Indexes for table `permalink`
@@ -210,31 +189,37 @@ ALTER TABLE `permalink`
   ADD UNIQUE KEY `permalink` (`permalink_id`);
 
 --
--- Indexes for table `profile`
+-- Indexes for table `profile_v2`
 --
-ALTER TABLE `profile`
+ALTER TABLE `profile_v2`
   ADD PRIMARY KEY (`idx`),
-  ADD UNIQUE KEY `sessionu` (`session`);
+  ADD UNIQUE KEY `sessionu` (`session`),
+  ADD KEY `eml` (`eml`);
 
 --
--- Indexes for table `raw_logs`
+-- Indexes for table `raw_logs_v2`
 --
-ALTER TABLE `raw_logs`
-  ADD PRIMARY KEY (`idx`),
-  ADD UNIQUE KEY `sessionu` (`session`,`id`,`time`);
+ALTER TABLE `raw_logs_v2`
+  ADD UNIQUE KEY `sess` (`session`,`time`,`pid`);
 
 --
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
-  ADD PRIMARY KEY (`uid`);
+  ADD PRIMARY KEY (`uid`),
+  ADD UNIQUE KEY `name` (`name`);
 
 --
--- Indexes for table `userunit`
+-- Indexes for table `userunit_v2`
 --
-ALTER TABLE `userunit`
-  ADD PRIMARY KEY (`idx`),
-  ADD UNIQUE KEY `sessionu` (`session`);
+ALTER TABLE `userunit_v2`
+  ADD UNIQUE KEY `spid` (`session`,`pid`);
+
+--
+-- Indexes for table `user_settings`
+--
+ALTER TABLE `user_settings`
+  ADD UNIQUE KEY `uid-param` (`uid`,`parameter`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -253,21 +238,9 @@ ALTER TABLE `debug_log`
   MODIFY `idx` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `defaultunit`
+-- AUTO_INCREMENT for table `profile_v2`
 --
-ALTER TABLE `defaultunit`
-  MODIFY `idx` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `profile`
---
-ALTER TABLE `profile`
-  MODIFY `idx` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `raw_logs`
---
-ALTER TABLE `raw_logs`
+ALTER TABLE `profile_v2`
   MODIFY `idx` int(11) NOT NULL AUTO_INCREMENT;
 
 --
@@ -275,10 +248,4 @@ ALTER TABLE `raw_logs`
 --
 ALTER TABLE `users`
   MODIFY `uid` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `userunit`
---
-ALTER TABLE `userunit`
-  MODIFY `idx` int(11) NOT NULL AUTO_INCREMENT;
 COMMIT;
